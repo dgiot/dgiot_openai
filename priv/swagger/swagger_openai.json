@@ -1,0 +1,68 @@
+{
+  "definitions": {},
+  "paths": {
+    "/completions": {
+      "post": {
+        "summary": "completions",
+        "description": "completions",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "prompt": {
+                  "description": "发送的问题",
+                  "type": "string",
+                  "example": "chatgpt是什么?"
+                },
+                "max_tokens": {
+                  "description": "max_tokens",
+                  "type": "number",
+                  "example": 2048
+                },
+                "model": {
+                  "description": "model",
+                  "type": "string",
+                  "example": "text-davinci-003"
+                },
+                "temperature": {
+                  "description": "temperature",
+                  "type": "number",
+                  "example": 0
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns operation status"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Server Internal error"
+          }
+        },
+        "tags": [
+          "openai"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "openai",
+      "description": "openai"
+    }
+  ]
+}
