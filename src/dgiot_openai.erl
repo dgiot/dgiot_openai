@@ -19,8 +19,28 @@
 -include("dgiot_openai.hrl").
 -include_lib("dgiot/include/logger.hrl").
 
--export([
+-export([do_requset/3
 ]).
 
 
 -define(APP, ?MODULE).
+
+
+
+do_requset(Type, Session, Args) ->
+    Url = "https://api.openai.com/v1/" ++ dgiot_utils:to_list(Type),
+    Authorization = "Bearer " ++ dgiot_utils:to_list(Session),
+    Headers = [
+        {"Authorization", Authorization}
+    ],
+    case httpc:request(post, {Url, Headers, "application/json", jsx:encode(Args)}, [], []) of
+        {ok, {{"HTTP/1.1", 200, "OK"}, _, Json}} ->
+            case jsx:decode(dgiot_utils:to_binary(Json), [{labels, binary}, return_maps]) of
+                #{<<"choices">> := _Choices} = Response ->
+                    Response#{<<"code">> => <<"200">>};
+                Error ->
+                    #{<<"code">> => <<"500">>, <<"error">> => Error}
+            end;
+        Error ->
+            #{<<"code">> => <<"500">>, <<"error">> => Error}
+    end.

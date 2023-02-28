@@ -79,24 +79,8 @@ handle(OperationID, Args, Context, Req) ->
 %% iot_hub 概要: 查询平台api资源 描述: 调用openai接口
 %% OperationId:post_completions
 %% 请求:GET /iotapi/
-do_request(post_completions, Args, #{<<"sessionToken">> := _SessionToken} = _Context, _Req) ->
-    io:format("Args = ~p.~n", [Args]),
-    Url = "https://api.openai.com/v1/completions",
-    Headers = [
-        {"Authorization", "Bearer sk-"}
-    ],
-    Result =
-        case httpc:request(post, {Url, Headers, "application/json", jsx:encode(Args)}, [], []) of
-            {ok, {{"HTTP/1.1", 200, "OK"}, _, Json}} ->
-                case jsx:decode(dgiot_utils:to_binary(Json), [{labels, binary}, return_maps]) of
-                    #{<<"choices">> := _Choices} = Response ->
-                        Response#{<<"code">> => <<"200">>};
-                    Error ->
-                        #{<<"code">> => <<"500">>, <<"error">> => Error}
-                end;
-            Error ->
-                #{<<"code">> => <<"500">>, <<"error">> => Error}
-        end,
+do_request(post_completions, Args, #{<<"sessionToken">> := _SessionTokfen} = _Context, _Req) ->
+    Result = dgiot_openai:do_requset("completions",_SessionTokfen,Args),
     {ok, Result};
 
 %%  服务器不支持的API接口
