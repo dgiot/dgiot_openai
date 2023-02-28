@@ -80,10 +80,12 @@ handle(OperationID, Args, Context, Req) ->
 %% OperationId:post_completions
 %% 请求:GET /iotapi/
 do_request(post_completions, Args, #{<<"sessionToken">> := _SessionTokfen} = _Context, _Req) ->
-    case dgiot_parse:get_object(<<"_Session">>, _SessionTokfen) of
+
+    Id = dgiot_parse_id:get_sessionId( _SessionTokfen),
+    case dgiot_parse:get_object(<<"_Session">>, Id) of
         {ok, #{<<"user">> := #{<<"objectId">> := UserId}}} ->
             case dgiot_parse:get_object(<<"_User">>, UserId) of
-                {ok, #{<<"tag">> := #{<<"openai">> := Key}}} ->
+                {ok, #{<<"tag">> := #{<<"chat">> := #{<<"openai">> := Key}}} }->
                     Result = dgiot_openai:do_requset("completions", Key, Args),
                     {ok, Result};
                 _ ->
@@ -95,8 +97,6 @@ do_request(post_completions, Args, #{<<"sessionToken">> := _SessionTokfen} = _Co
 
 %%  服务器不支持的API接口
 do_request(_OperationId, _Args, _Context, _Req) ->
-    io:format("~s ~p _OperationId = ~p.~n", [?FILE, ?LINE, _OperationId]),
-    io:format("~s ~p _Args = ~p.~n", [?FILE, ?LINE, _Args]),
 %%    io:format("~s ~p _Context = ~p.~n", [?FILE, ?LINE, _Context]),
     {error, <<"Not Allowed.">>}.
 
