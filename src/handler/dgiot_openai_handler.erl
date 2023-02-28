@@ -80,8 +80,18 @@ handle(OperationID, Args, Context, Req) ->
 %% OperationId:post_completions
 %% 请求:GET /iotapi/
 do_request(post_completions, Args, #{<<"sessionToken">> := _SessionTokfen} = _Context, _Req) ->
-    Result = dgiot_openai:do_requset("completions",_SessionTokfen,Args),
-    {ok, Result};
+    case dgiot_parse:get_object(<<"_Session">>, _SessionTokfen) of
+        {ok, #{<<"user">> := #{<<"objectId">> := UserId}}} ->
+            case dgiot_parse:get_object(<<"_User">>, UserId) of
+                {ok, #{<<"tag">> := #{<<"openai">> := Key}}} ->
+                    Result = dgiot_openai:do_requset("completions", Key, Args),
+                    {ok, Result};
+                _ ->
+                    error
+            end;
+        _ ->
+            error
+    end;
 
 %%  服务器不支持的API接口
 do_request(_OperationId, _Args, _Context, _Req) ->

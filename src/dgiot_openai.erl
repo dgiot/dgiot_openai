@@ -25,11 +25,9 @@
 
 -define(APP, ?MODULE).
 
-
-
-do_requset(Type, Session, Args) ->
+do_requset(Type, Key, Args) ->
     Url = "https://api.openai.com/v1/" ++ dgiot_utils:to_list(Type),
-    Authorization = "Bearer " ++ dgiot_utils:to_list(Session),
+    Authorization = "Bearer " ++ dgiot_utils:to_list(Key),
     Headers = [
         {"Authorization", Authorization}
     ],
