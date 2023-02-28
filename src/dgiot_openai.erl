@@ -26,23 +26,6 @@
 -define(APP, ?MODULE).
 
 do_requset(Type, Key, Args) ->
-
-    case dgiot_parse:query_object(<<"_User">>,#{}) of
-        {ok, #{<<"results">> := Res}}->
-            lists:foldl(
-                fun(#{<<"tag">> := Tag,<<"objectId">> := Id} ,_)->
-                    NewTag = dgiot_map:merge(Tag,#{<<"chat">> => #{<<"openai">> => <<"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">>}}),
-                    dgiot_parse:update_object(<<"_User">>,Id,#{<<"tag">> => NewTag});
-                    (#{<<"objectId">> := Id} ,_)->
-                        NewTag = dgiot_map:merge(#{},#{<<"chat">> => #{<<"openai">> => <<"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">>}}),
-                        dgiot_parse:update_object(<<"_User">>,Id,#{<<"tag">> => NewTag});
-                    (_,_)->
-                        pass
-            end,[],Res);
-        _->
-            pass
-    end
-    ,
     Url = "https://api.openai.com/v1/" ++ dgiot_utils:to_list(Type),
     Authorization = "Bearer " ++ dgiot_utils:to_list(Key),
     Headers = [

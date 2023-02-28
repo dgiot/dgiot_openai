@@ -80,7 +80,6 @@ handle(OperationID, Args, Context, Req) ->
 %% OperationId:post_completions
 %% 请求:GET /iotapi/
 do_request(post_completions, Args, #{<<"sessionToken">> := _SessionTokfen} = _Context, _Req) ->
-
     Id = dgiot_parse_id:get_sessionId( _SessionTokfen),
     case dgiot_parse:get_object(<<"_Session">>, Id) of
         {ok, #{<<"user">> := #{<<"objectId">> := UserId}}} ->
