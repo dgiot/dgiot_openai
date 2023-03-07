@@ -79,23 +79,48 @@ handle(OperationID, Args, Context, Req) ->
 %% iot_hub 概要: 查询平台api资源 描述: 调用openai接口
 %% OperationId:post_completions
 %% 请求:GET /iotapi/
-do_request(post_completions, Args, #{<<"sessionToken">> := _SessionTokfen} = _Context, _Req) ->
-    Id = dgiot_parse_id:get_sessionId( _SessionTokfen),
-    case dgiot_parse:get_object(<<"_Session">>, Id) of
-        {ok, #{<<"user">> := #{<<"objectId">> := UserId}}} ->
-            case dgiot_parse:get_object(<<"_User">>, UserId) of
-                {ok, #{<<"tag">> := #{<<"chat">> := #{<<"openai">> := Key}}} }->
-                    Result = dgiot_openai:do_requset("completions", Key, Args),
-                    {ok, Result};
-                _ ->
-                    error
+do_request(post_completions, Args, #{<<"sessionToken">> := SessionToken} = _Context, _Req) ->
+    case dgiot_auth:get_session(SessionToken) of
+        #{<<"tag">> := #{<<"chat">> := #{<<"openai">> := Key}}} ->
+            Url = application:get_env(dgiot_openai, bridge_url, "https://prod.dgiotcloud.cn") ++ "/iotapi/bridge_completions",
+            NewArgs = Args#{<<"type">> => <<"completions">>, <<"key">> => Key},
+            case httpc:request(post, {Url, [], "application/json", jsx:encode(NewArgs)}, [], []) of
+                {ok, {{"HTTP/1.1", 200, "OK"}, _, Json}} ->
+                    case jsx:decode(dgiot_utils:to_binary(Json), [{labels, binary}, return_maps]) of
+                        #{<<"choices">> := _Choices} = Response ->
+                            {ok, Response#{<<"code">> => <<"200">>}};
+                        Error ->
+                            {ok, #{<<"code">> => <<"500">>, <<"error">> => Error}}
+                    end;
+                Error ->
+                    {ok, #{<<"code">> => <<"500">>, <<"error">> => Error}}
             end;
         _ ->
-            error
+            {ok, #{<<"code">> => <<"404">>, <<"msg">> => <<"未配置 openai key"/utf8>>, <<"status">> => <<"ok">>}}
+    end;
+
+%% iot_hub 概要: 查询平台api资源 描述: openai桥接接口
+%% OperationId:post_completions
+%% 请求:GET /iotapi/
+do_request(post_bridge_completions, #{<<"type">> := Type, <<"key">> := Key} = Args, _Context, _Req) ->
+    Url = "https://api.openai.com/v1/" ++ dgiot_utils:to_list(Type),
+    Authorization = "Bearer " ++ dgiot_utils:to_list(Key),
+    Headers = [
+        {"Authorization", Authorization}
+    ],
+    case httpc:request(post, {Url, Headers, "application/json", jsx:encode(maps:without([<<"type">>, <<"key">>], Args))}, [], []) of
+        {ok, {{"HTTP/1.1", 200, "OK"}, _, Json}} ->
+            case jsx:decode(dgiot_utils:to_binary(Json), [{labels, binary}, return_maps]) of
+                #{<<"choices">> := _Choices} = Response ->
+                    {ok, Response#{<<"code">> => <<"200">>}};
+                Error ->
+                    {ok, #{<<"code">> => <<"500">>, <<"error">> => Error}}
+            end;
+        Error ->
+            {ok, #{<<"code">> => <<"500">>, <<"error">> => Error}}
     end;
 
 %%  服务器不支持的API接口
 do_request(_OperationId, _Args, _Context, _Req) ->
 %%    io:format("~s ~p _Context = ~p.~n", [?FILE, ?LINE, _Context]),
     {error, <<"Not Allowed.">>}.
-

@@ -1,0 +1,4 @@
+{mapping, "bridge_url", "dgiot_openai.bridge_url", [
+{default, "https://prod.dgiotcloud.cn"},
+{datatype, string}
+]}.
