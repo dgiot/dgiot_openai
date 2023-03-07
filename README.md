@@ -1,80 +1,57 @@
 # dgiot_openai
 
-dgiot_openai是一个开源插件，主要功能是实现chatGPT的api封装和桥接。它可以帮助开发者快速接入chatGPT的api，实现自然语言处理的功能。
+dgiot_openai是一个erlang语言实现的开源插件，主要功能是实现chatGPT的api封装和桥接。
 
 ## 功能特性
 
-* 封装chatGPT的api，实现自然语言处理的功能
-* 支持多种语言，包括中文、英文、日文等
-* 支持多种输入输出格式，包括JSON、XML等
-* 支持多种训练模型，包括GPT-2、BERT等
+* 封装chatGPT的api，提供简单易用的接口，方便调用
+* 支持多种语言，支持中文、英文等
+* 支持多种模式，支持问答模式、对话模式等
 
 ## 安装
 
-### 安装依赖
+### 依赖
 
-dgiot_openai需要安装以下依赖：
+* Erlang/OTP 20.0+
 
-* Python 3.6+
-* TensorFlow 2.0+
-* OpenAI GPT-2
-
-### 下载源码
-
-从GitHub上下载dgiot_openai的源码：
+### 下载
 
 ```
 git clone https://github.com/dgiot/dgiot_openai.git
 ```
 
-### 安装
-
-进入dgiot_openai目录，执行以下命令安装：
+### 编译
 
 ```
-pip install .
+cd dgiot_openai
+make
 ```
 
 ## 使用
 
 ### 初始化
 
-使用dgiot_openai之前，需要先初始化：
-
-```python
-from dgiot_openai import OpenAI
-
-openai = OpenAI()
+```erlang
+dgiot_openai:start().
 ```
 
-### 训练模型
+### 调用
 
-使用dgiot_openai可以训练GPT-2模型：
-
-```python
-openai.train_gpt2(data_path, model_path)
+```erlang
+dgiot_openai:query(Text, Mode).
 ```
 
-### 预测
-
-使用dgiot_openai可以预测输入文本的输出：
-
-```python
-openai.predict(input_text, model_path)
-```
+其中，Text为要查询的文本，Mode为查询模式，可以是`qa`（问答模式）或`dialog`（对话模式）。
 
 ## 示例
 
-以下是一个使用dgiot_openai的示例：
-
-```python
-from dgiot_openai import OpenAI
-
-openai = OpenAI()
-
-# 训练GPT-2模型
-openai.train_gpt2(data_path, model_path)
-
-# 预测输入文本的输出
-output_text = openai.predict(input_text, model_path)
+```erlang
+1> dgiot_openai:start().
+ok
+2> dgiot_openai:query("你叫什么名字？", qa).
+{ok,{[{text,"我叫dgiot_openai。"}],
+[{type,"qa"},{confidence,1.0}]}}
+3> dgiot_openai:query("你好！", dialog).
+{ok,{[{text,"你好！很高兴认识你。"}],
+[{type,"dialog"},{confidence,1.0}]}}
 ```
